@@ -2,14 +2,16 @@ import numpy as np
 import pandas as pd
 import sklearn
 
+from sklearn.model_selection import train_test_split
+from sklearn import svm
+
 
 def my_svm(df: pd.DataFrame, results: np.ndarray) -> float:
     # Split the data into training and testing sets
-    x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(df,
-                                        results, test_size=0.2, random_state=42)
+    x_train, x_test, y_train, y_test = train_test_split(df, results, test_size=0.2, random_state=42)
 
     # Create an SVM classifier
-    clf = sklearn.svm.SVC(kernel='linear')
+    clf = svm.SVC(kernel='linear')
 
     # Train the SVM classifier
     clf.fit(x_train, y_train)

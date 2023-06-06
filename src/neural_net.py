@@ -13,7 +13,7 @@ def array_to_categorical(array: np.ndarray):
 
 
 def regression(df: pd.DataFrame, results: np.ndarray, *,
-               hidden_layer: bool = False, epochs: int = 128) -> None | tuple:
+               hidden_layer: bool = False, epochs: int = 128) -> None | tuple[tuple[float, ...], str]:
     df_shape = df.shape
     train_ratio = 0.8
     train_samples = int(train_ratio * df_shape[0])
@@ -25,7 +25,9 @@ def regression(df: pd.DataFrame, results: np.ndarray, *,
 
     model = tf.keras.models.Sequential()
     if not hidden_layer:
-        model.add(tf.keras.layers.Dense(1, input_shape=(df_shape[1],), activation='linear'))
+        initial_bias = tf.keras.initializers.Constant(value=5.5)
+        model.add(tf.keras.layers.Dense(1, input_shape=(df_shape[1],), activation='linear',
+                                        bias_initializer=initial_bias))
     else:
         model.add(tf.keras.layers.Dense(df_shape[1], input_shape=(df_shape[1],), activation='linear'))
         model.add(tf.keras.layers.Dense(1))
@@ -34,19 +36,18 @@ def regression(df: pd.DataFrame, results: np.ndarray, *,
     model.compile(loss='mse', optimizer='adam')
     model.fit(training_df, training_results, epochs=epochs)
 
-    for i, layer in enumerate(model.layers):
-        weights, biases = layer.get_weights()
-        print(f"Layer {i} Weights:")
-        print(weights)
-        print(f"Layer {i} Biases:")
-        print(biases)
-
     loss = model.evaluate(testing_df, testing_results)
     print("Test Loss:", loss)
 
     if hidden_layer:
         return
-    return *model.layers[0].get_weights(), loss
+    weights, bias = model.layers[0].get_weights()
+    bias_weights = float(bias), *tuple(float(i) for i in weights)
+    print("Weights:")
+    print(*tuple(f"{i:.4f}" for i in bias_weights[1:]), sep=", ")
+    print("Bias:")
+    print(f"{bias_weights[0]:.4f}")
+    return bias_weights, f"{loss:.4f}"
 
 
 def classification(df: pd.DataFrame, results: np.ndarray, *,
@@ -87,6 +88,3 @@ def classification(df: pd.DataFrame, results: np.ndarray, *,
     test_loss, test_acc = model.evaluate(testing_df, testing_results)
     print('Test Loss:', test_loss)
     print('Test Accuracy:', test_acc)
-
-
-

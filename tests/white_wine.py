@@ -6,6 +6,7 @@ import df_cleaning
 import df_visualization
 import neural_net
 import pca
+import svm
 
 
 def upper_limit_dict() -> dict:
@@ -58,8 +59,17 @@ def main() -> None:
     # df_visualization.plot_lin_fit_predicted(dimension3_reduced_wine_df, clipped_qualities_array)
 
     # machine learning --------------------------------------------------------------------------
-    # neural_net.regression(dimension3_reduced_wine_df, clipped_qualities_array, hidden_layer=False)
-    # neural_net.classification(dimension3_reduced_wine_df, clipped_qualities_array)
+    ml_weights, loss = neural_net.regression(dimension3_reduced_wine_df, clipped_qualities_array,
+                                             hidden_layer=False, epochs=64)
+    df_visualization.plot_real_vs_predicted(dimension3_reduced_wine_df, clipped_qualities_array, ml_weights,
+                                            testing_loss=loss)
+
+    neural_net.regression(dimension3_reduced_wine_df, clipped_qualities_array, hidden_layer=True, epochs=64)
+
+    neural_net.classification(dimension3_reduced_wine_df, clipped_qualities_array)
+
+    # SVM -------------------------------------------------------------------------------------
+    svm.my_svm(dimension3_reduced_wine_df, clipped_qualities_array)
 
 
 if __name__ == "__main__":
